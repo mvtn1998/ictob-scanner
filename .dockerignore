@@ -1,0 +1,16 @@
+threads/
+tools/
+logs/
+data/
+__pycache__/
+.git/
+*.log
+*.png
+upstox_token.json
+config/credentials.json
+server.py
+scanner_engine.py
+scanner_core.py
+site_feed.py
+web/index.html
+web/board.*

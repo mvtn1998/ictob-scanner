@@ -1,0 +1,23 @@
+# Never commit secrets, local caches or the unrelated OB Sentinel app.
+config/credentials.json
+upstox_token.json
+data/
+logs/
+tools/
+threads/
+__pycache__/
+*.pyc
+*.log
+*.png
+.freebuff/
+.cloud-attachments/
+.env
+
+# repo hygiene
+claude-oss-application.md
+server.py
+scanner_engine.py
+scanner_core.py
+site_feed.py
+web/index.html
+web/board.*

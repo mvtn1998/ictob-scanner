@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: ictob-scanner
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free             # $0 forever; sleeps after 15 min idle and wakes in ~1 min
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: ICTOB_PASSWORD      # password for the public page
+        sync: false
+      - key: UPSTOX_API_KEY
+        sync: false
+      - key: UPSTOX_API_SECRET
+        sync: false
+      - key: UPSTOX_REDIRECT_URI # https://<your-service>.onrender.com/callback
+        sync: false
+      - key: ICTOB_STATE_DIR
+        value: /tmp/ictob-state   # free instances have no persistent disk
+      - key: UPSTOX_ACCESS_TOKEN  # optional: today's token, so the site starts LIVE
+        sync: false

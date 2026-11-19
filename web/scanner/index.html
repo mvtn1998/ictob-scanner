@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ICT OB Scanner — intraday order-block volume radar</title>
+<link rel="stylesheet" href="/scanner.css" />
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">ICT OB SCANNER</div>
+    <div class="meta" id="userLbl">user: -</div>
+    <div class="meta master" id="masterLbl">loading F&amp;O master…</div>
+    <div class="grow"></div>
+    <label class="lbl" for="tf">chart:</label>
+    <select id="tf" class="sel"></select>
+    <label class="chk"><input type="checkbox" id="volCandles" /> Volume candles</label>
+    <button class="btn" id="refreshBtn">↻ Refresh now</button>
+    <button class="btn warn" id="replayBtn">▶ Replay</button>
+    <div class="engtag">5-min OB engine · TV v1.2</div>
+    <button class="btn link" id="loginBtn">Link broker</button>
+  </header>
+
+  <div class="replaybar" id="replaybar" hidden>
+    <span class="rlabel">REPLAY</span>
+    <button class="btn sm" id="rBack">◀ Step</button>
+    <button class="btn sm" id="rPlay">▶ Play</button>
+    <button class="btn sm" id="rFwd">Step ▶</button>
+    <input type="range" id="rRange" min="0" max="0" value="0" />
+    <span class="rnow" id="rNow"></span>
+    <span class="rnote">chart only · scanner keeps running</span>
+    <button class="btn sm" id="rExit">✕ Exit</button>
+  </div>
+
+  <main class="main">
+    <aside class="left" id="leftPane">
+      <div class="ranktitle" id="rankTitle">STOCKS — RALLY + OPTION/TPM</div>
+      <div class="searchrow">
+        <input id="search" class="search" placeholder="search symbol…" autocomplete="off" />
+        <button class="xbtn" id="clearSearch">×</button>
+      </div>
+      <div class="moderow">
+        <span class="lbl">scan by:</span>
+        <select id="mode" class="sel">
+          <option>OB VOL (x)</option>
+          <option>OPTION + TPM</option>
+          <option>RALLY + OPT</option>
+          <option>INDICES</option>
+        </select>
+        <span class="optstatus" id="optStatus"></span>
+      </div>
+      <div class="tablewrap">
+        <table class="board" id="rankTable">
+          <thead>
+            <tr>
+              <th class="l" id="thSym">SYMBOL</th>
+              <th class="r" id="thX">OB VOL x</th>
+              <th class="c" id="thObs">OBs</th>
+              <th class="c" id="thCell">RALLY+OPT</th>
+              <th class="r" id="thLtp">LTP</th>
+            </tr>
+          </thead>
+          <tbody id="rankBody"></tbody>
+        </table>
+      </div>
+      <div class="leftfoot" id="leftFoot"></div>
+    </aside>
+
+    <aside class="left idxpane" id="idxPane" hidden>
+      <div class="idxhead">
+        <button class="btn xs" id="backIdx">◀ indices</button>
+        <span class="idxname" id="idxLbl"></span>
+        <span class="chgwrap">chg ≥
+          <input id="chgMin" class="chgin" inputmode="decimal" />
+          <button class="xbtn" id="clearChg">×</button>
+        </span>
+      </div>
+      <div class="tablewrap">
+        <table class="board" id="idxTable">
+          <thead>
+            <tr>
+              <th class="l">SYMBOL</th>
+              <th class="r">CHG %</th>
+              <th class="c">OBs</th>
+              <th class="c">RALLY+OPT</th>
+              <th class="r">LTP</th>
+            </tr>
+          </thead>
+          <tbody id="idxBody"></tbody>
+        </table>
+      </div>
+    </aside>
+
+    <section class="right">
+      <div class="chartwrap">
+        <canvas id="chart"></canvas>
+        <div class="chartempty" id="chartEmpty">Loading F&amp;O master… pick a stock to start the radar.</div>
+      </div>
+
+      <div class="oipanel">
+        <div class="oicard"><pre id="oiCard">OPTION DETAIL — (select a stock)</pre></div>
+        <div class="oimid">
+          <div class="meter">
+            <div class="meterhead">
+              <span class="up" id="mUp">0 up</span><span class="dot">·</span>
+              <span class="down" id="mDown">0 down</span><span class="dot">·</span>
+              <span class="flat" id="mFlat">0 flat</span>
+              <span class="breadth"><i id="bUp"></i><i id="bDown"></i><i id="bFlat"></i></span>
+            </div>
+            <div class="meterrow"><span class="cap">TOP</span><div class="pills" id="topPills"></div></div>
+            <div class="meterrow"><span class="cap">WORST</span><div class="pills" id="worstPills"></div></div>
+          </div>
+        </div>
+        <div class="oiright">
+          <div class="barsbox">
+            <div class="barstitle" id="tpmTitle">Trade activity / min</div>
+            <canvas id="tpmBars"></canvas>
+          </div>
+          <div class="contbox">
+            <div class="conttitle">Traded Continuity</div>
+            <div class="contpct" id="contPct">—</div>
+            <div class="contnote" id="contNote"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="statusbar">
+    <span id="statusText">initialising…</span>
+    <span class="grow"></span>
+    <span class="feed" id="feedBadge">SAMPLE</span>
+  </footer>
+</div>
+
+<div class="modal" id="loginModal" hidden>
+  <div class="modalcard">
+    <div class="modalhead">
+      <span>ICT OB SCANNER</span>
+      <em>Upstox API · F&amp;O intraday order-block radar</em>
+      <button class="xbtn" id="loginClose">×</button>
+    </div>
+    <div class="modalbody">
+      <p class="hint">1) API KEY (Upstox Developer App → API key)</p>
+      <input id="lKey" class="inp" autocomplete="off" />
+      <p class="hint">2) API SECRET</p>
+      <input id="lSecret" class="inp" type="password" autocomplete="off" />
+      <p class="hint">3) REDIRECT URI (exactly as registered)</p>
+      <input id="lRedirect" class="inp" placeholder="http://localhost:8770/callback" />
+      <a class="openlink" id="lOpen" href="/api/auth/login" target="_blank" rel="noopener">Open Upstox login page ↗</a>
+      <p class="hint">4) After login the browser lands on your redirect URL ending with ?code=XXXX — paste that whole URL here</p>
+      <input id="lCode" class="inp" autocomplete="off" />
+      <div class="modalfoot">
+        <span class="msg" id="loginMsg"></span>
+        <button class="btn primary" id="lLogin">Login</button>
+      </div>
+      <div class="rule"></div>
+      <p class="hint">…or paste an existing ACCESS TOKEN directly (valid until 3:30 AM):</p>
+      <input id="lToken" class="inp" type="password" autocomplete="off" />
+      <button class="btn grey" id="lUseToken">Use token</button>
+    </div>
+  </div>
+</div>
+
+<script src="/scanner.js"></script>
+</body>
+</html>

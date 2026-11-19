@@ -1,0 +1,23 @@
+# Local caches, secrets and the unrelated OB Sentinel app must never be uploaded.
+data/
+logs/
+tools/
+threads/
+__pycache__/
+*.pyc
+*.log
+*.png
+.git/
+.freebuff/
+.cloud-attachments/
+config/
+upstox_token.json
+server.py
+scanner_engine.py
+scanner_core.py
+site_feed.py
+web/index.html
+web/board.*
+scanner.log
+tunnel.log
+claude-oss-application.md
