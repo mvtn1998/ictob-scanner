@@ -14,10 +14,13 @@ __pycache__/
 .env
 
 # repo hygiene
-claude-oss-application.md
-server.py
-scanner_engine.py
-scanner_core.py
-site_feed.py
+/claude-oss-application.md
+/server.py
+/scanner_engine.py
+/scanner_core.py
+/site_feed.py
 web/index.html
 web/board.*
+
+# local only
+render_key.txt
