@@ -276,6 +276,9 @@ class Handler(BaseHTTPRequestHandler):
 
         # ---- pages ----
         if path in ("/", ""):
+            # the site is the smart-money stage; the pitch lives at /home
+            return self._file("smart.html")
+        if path == "/home":
             return self._file("index.html")
         if path == "/board":
             return self._file("board.html")
