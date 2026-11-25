@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OB SENTINEL — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/dash.css" />
+</head>
+<body>
+
+<div id="disc"><b>Educational software · not investment advice.</b> Order blocks, zones and scores are computed from your own feed and are not recommendations. You are responsible for your own trades.</div>
+
+<header class="top">
+  <div>
+    <h1>OB <span>SENTINEL</span></h1>
+    <div class="sub">Order-block radar over the NSE F&amp;O universe — a ranked tape of bullish and bearish structure, the market picture underneath it, and one stock up close with its live 5-minute zone. <a href="/smart" style="color:var(--blue);font-weight:600">Open the Smart Money stage →</a></div>
+  </div>
+  <div class="hd-right">
+    <a id="upstoxBtn" class="upstox" href="/api/auth/login?next=dash" title="Link your Upstox account to switch the scanner to the live feed">Connect Upstox</a>
+    <div class="badges" id="badges"><span class="badge">connecting…</span></div>
+  </div>
+</header>
+
+<section class="icards" id="tape"></section>
+
+<div class="scope" id="scopeBar"></div>
+
+<main>
+  <div class="grid">
+    <!-- ============================ left: picture + tape ============================ -->
+    <div>
+      <div class="card">
+        <div class="hrow">
+          <div class="h">Market picture · every scored stock, by day move</div>
+          <div class="counts"><span class="cb" id="cntBull">—</span><span class="cs" id="cntBear">—</span></div>
+        </div>
+        <div id="picWrap">
+          <canvas id="dotfield"></canvas>
+          <div id="dotTip"></div>
+        </div>
+        <div class="picfoot">
+          <span>Breadth <span class="breadth"><i id="breadthFill" style="width:50%"></i></span></span>
+          <span>Leading <b id="leadSec">—</b></span>
+          <span>Lagging <b id="lagSec">—</b></span>
+          <span class="grow"></span>
+          <span id="picMeta">—</span>
+        </div>
+        <div class="note" id="picNote">One dot per scored stock: above the line is bullish structure, below is bearish; dot depth is strength, left–right is the day’s move.</div>
+      </div>
+
+      <div class="sec">BULLISH TAPE <small id="bullMeta">ranked by strength</small></div>
+      <div class="card tw">
+        <table class="lb" id="bullTable"></table>
+        <div class="note" id="bullNote"></div>
+      </div>
+
+      <div class="sec">BEARISH TAPE <small id="bearMeta">ranked by strength</small></div>
+      <div class="card tw">
+        <table class="lb" id="bearTable"></table>
+        <div class="note" id="bearNote"></div>
+      </div>
+    </div>
+
+    <!-- ============================ right: one stock up close ============================ -->
+    <aside class="card setup" id="setup">
+      <div class="hrow"><div class="h">Setup</div><span class="muted mono" style="font-size:10.5px" id="sBadge"></span></div>
+      <div id="setupEmpty" class="empty">Pick a stock from either tape to open its zone.</div>
+      <div id="setupBody" hidden>
+        <div class="shead">
+          <div class="sid"><b id="sSym">—</b><em id="sMeta">—</em></div>
+          <div class="squote"><b id="sLtp">—</b><em id="sPct">—</em></div>
+        </div>
+        <div id="sChartWrap"><canvas id="sChart"></canvas><div id="sTip"></div></div>
+        <div class="kv" id="sStats"></div>
+        <div class="levels" id="sLevels"></div>
+        <div class="contract" id="sContract"></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ============================ bottom row ============================ -->
+  <div class="sec">WHAT IS FIRING <small>live detections, sector pulse and the strongest names right now</small></div>
+  <div class="g3">
+    <div class="card">
+      <div class="hrow"><div class="h">Live detections</div><span class="mono muted" style="font-size:10.5px" id="feedN"></span></div>
+      <div class="list" id="feed"></div>
+    </div>
+    <div class="card">
+      <div class="hrow"><div class="h">Sector pulse</div><span class="mono muted" style="font-size:10.5px">avg day move</span></div>
+      <div class="list" id="sectors"></div>
+    </div>
+    <div class="card">
+      <div class="hrow"><div class="h">Strongest structure</div><span class="mono muted" style="font-size:10.5px">top 6 each side</span></div>
+      <div class="list" id="leaders"></div>
+    </div>
+  </div>
+
+  <div class="note" id="foot">Data from your own scanner: order blocks, VWAP and levels are drawn on the stock’s 5-minute session; strength is the scanner’s own composite score. This page shows the scanner, it does not place orders.</div>
+</main>
+
+<footer class="status">
+  <span class="dot" id="statusDot"></span>
+  <b id="phaseLbl">BOOTING</b>
+  <div class="prog"><i id="progFill" style="width:0%"></i></div>
+  <span id="cycleLbl">SCAN —</span>
+  <span class="grow"></span>
+  <span id="sessionLbl">—</span>
+  <span id="feedLbl">feed · —</span>
+  <span id="tickLbl">tick · —</span>
+  <span class="err" id="errLbl"></span>
+</footer>
+
+<script src="/dash.js"></script>
+</body>
+</html>

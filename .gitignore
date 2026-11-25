@@ -1,7 +1,8 @@
 # Never commit secrets, local caches or the unrelated OB Sentinel app.
 config/credentials.json
 upstox_token.json
-data/
+data/*
+!data/sentinel_universe.json
 logs/
 tools/
 threads/
@@ -15,12 +16,10 @@ __pycache__/
 
 # repo hygiene
 /claude-oss-application.md
-/server.py
-/scanner_engine.py
-/scanner_core.py
-/site_feed.py
-web/index.html
-web/board.*
+config/sync.json
 
 # local only
 render_key.txt
+
+# scratch
+.tmp/

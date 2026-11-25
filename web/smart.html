@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Smart Money — OB Sentinel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/smart.css" />
+</head>
+<body>
+
+<div id="disc"><b>Educational software · not investment advice.</b> Order blocks, structure and scores are computed from your own scanner feed. Patterns are not recommendations. You are responsible for your own trades. <span id="linkNote" hidden></span></div>
+
+<header>
+  <h1>SMART MONEY</h1>
+  <span class="sub">Every F&amp;O stock in your scanner · ranked <b>RALLY + OPT</b> (rally score blended with option quality): displacement, order blocks, option flow and liquidity, live</span>
+  <span class="sp"></span>
+  <a href="/dash">Dashboard</a>
+  <a href="/board">Board</a>
+  <a href="/terminal">Chart</a>
+  <a id="upstoxBtn" class="upstox" href="/api/auth/login?next=smart" title="Link your Upstox account to switch the scanner to the live feed">Connect Upstox</a>
+  <span class="live" id="live"><span class="dot"></span>LIVE · –</span>
+</header>
+
+<main>
+  <div class="cards" id="cards"></div>
+
+  <div id="stage">
+    <canvas id="bg"></canvas>
+    <canvas id="fx"></canvas>
+    <canvas id="beads"></canvas>
+    <div class="slabel" id="lagl"></div>
+    <div class="slabel" id="leadl"></div>
+    <div class="counts" id="counts">
+      <div class="up">▲ BULLISH</div><div class="n up" id="nb">–</div>
+      <div class="down">▼ BEARISH</div><div class="n down" id="nr">–</div>
+    </div>
+    <div id="chips"></div>
+    <div id="tiles"><div class="half" id="hbull"></div><div class="half" id="hbear"></div></div>
+  </div>
+
+  <div class="note">
+    Lines: every stock's move through the session (green above zero, red below), indices dashed.
+    Waterfall: every stock now, strongest at the top; the 20 strongest and 20 weakest connect to their tiles.
+    Hover a line, a bar, a bead or a tile to follow one stock; hover a sector to see its stocks. Click to open its zone.
+    Rank is <b>RALLY + OPT</b> — only stocks in a rally are listed, then they sort by 62% rally strength + 38% option quality, chains already read first; “OB” on the big tiles is the distance to that stock's live order block.
+  </div>
+</main>
+
+<div id="tip"></div>
+
+<div id="modal">
+  <div class="box" id="mbox">
+    <div class="mh">
+      <div>
+        <h2 id="mname"></h2>
+        <div class="muted" id="msub"></div>
+        <div id="mprice"></div>
+      </div>
+      <button id="mx">✕</button>
+    </div>
+    <div class="mg">
+      <div>
+        <div id="mcw"><canvas id="mc"></canvas><div id="mtip" hidden></div></div>
+        <div class="evs" id="mev"></div>
+      </div>
+      <div class="lv" id="mlv"></div>
+    </div>
+    <div class="note">5-minute session from your scanner · order-block zones, VWAP and the active zone's invalidation. This panel reads the same chart endpoint as the dashboard.</div>
+  </div>
+</div>
+
+<script src="/smart.js"></script>
+</body>
+</html>

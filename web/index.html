@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OB Sentinel — Order-block intelligence for NSE F&amp;O</title>
+<meta name="description" content="Institutional order blocks, rally momentum and option-chain liquidity for NSE F&O — read as one picture, seconds after the open." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/site.css" />
+</head>
+<body>
+<div class="atmosphere">
+  <div class="glow glow-a"></div>
+  <div class="glow glow-b"></div>
+  <div class="grid-lines"></div>
+  <div class="grain"></div>
+</div>
+
+<header class="nav" id="nav">
+  <a class="brand" href="#top">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 30 16 16 30 2 16Z" fill="none" stroke="url(#g1)" stroke-width="1.4"/><path d="M16 9.5 22.5 16 16 22.5 9.5 16Z" fill="url(#g1)" opacity=".9"/><defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#67d8ff"/><stop offset="1" stop-color="#6cf5c2"/></linearGradient></defs></svg>
+    <span>OB SENTINEL</span>
+  </a>
+  <nav class="nav-links">
+    <a href="#read">The read</a>
+    <a href="#picture">Market picture</a>
+    <a href="#live">Live board</a>
+    <a href="#engine">Engine</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+  <div class="nav-actions">
+    <span class="feed-chip" id="feedChip"><i></i><span>SAMPLE</span></span>
+    <a class="btn btn-small" id="navCta" href="/api/auth/login">Connect broker</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ============================== HERO ============================== -->
+  <section class="hero">
+    <div class="hero-copy reveal">
+      <span class="eyebrow"><i></i>Intraday intelligence · NSE F&amp;O</span>
+      <h1>See where the move<br /><span class="grad">actually began.</span></h1>
+      <p class="lede">
+        Institutional order blocks, rally momentum and option-chain liquidity —
+        folded into one read, seconds after the opening bell.
+      </p>
+      <div class="hero-actions">
+        <a class="btn" href="#read">See how it reads</a>
+        <a class="btn btn-quiet" id="heroConnect" href="/api/auth/login">Connect Upstox</a>
+      </div>
+      <ul class="hero-meta">
+        <li><b>213</b><span>F&amp;O underlyings</span></li>
+        <li><b>24</b><span>NSE indices</span></li>
+        <li><b>5m</b><span>scan cadence</span></li>
+      </ul>
+    </div>
+
+    <div class="hero-visual reveal" data-delay="1">
+      <div class="chart-shell" id="chartShell">
+        <div class="chart-head">
+          <div class="chart-id">
+            <span class="chart-sym" id="chartSym">NIFTY 50</span>
+            <span class="chart-sub" id="chartSub">sample session · 5m</span>
+          </div>
+          <div class="chart-tabs" id="chartTabs">
+            <button class="tab active" data-sym="NIFTY 50">NIFTY 50</button>
+            <button class="tab" data-sym="NIFTY BANK">BANK</button>
+            <button class="tab" data-sym="" id="topTab" hidden>TOP SIGNAL</button>
+          </div>
+        </div>
+        <div class="chart-canvas-wrap">
+          <canvas id="heroChart"></canvas>
+          <div class="chart-tooltip" id="chartTip" hidden></div>
+        </div>
+        <div class="chart-legend">
+          <span><i class="dot mint"></i>Bullish block</span>
+          <span><i class="dot rose"></i>Bearish block</span>
+          <span><i class="dot cyan"></i>Session VWAP</span>
+        </div>
+      </div>
+      <div class="float-tag tag-a"><i></i>ORDER BLOCK · ELITE</div>
+      <div class="float-tag tag-b">DISPLACEMENT</div>
+    </div>
+  </section>
+
+  <div class="tape" aria-hidden="true">
+    <div class="tape-track" id="tape"></div>
+  </div>
+
+  <!-- ============================== READ ============================== -->
+  <section class="section" id="read">
+    <div class="sec-head reveal">
+      <span class="sec-num">01 — The read</span>
+      <h2>Three signals.<br /><span class="dim">One decision.</span></h2>
+      <p>Each one is read the way an institution would: where the move was born, how strong it is, and whether the option depth can carry it.</p>
+    </div>
+
+    <div class="cards">
+      <article class="card reveal">
+        <div class="card-visual">
+          <canvas class="mini" id="miniOb"></canvas>
+          <span class="vis-tag">ZONE 01</span>
+        </div>
+        <h3>Order blocks</h3>
+        <p>The last candle before the impulse, drawn as a zone and kept until price closes beyond it. Reversal build-up, visible before it is obvious.</p>
+      </article>
+
+      <article class="card reveal" data-delay="1">
+        <div class="card-visual gauge-wrap">
+          <svg class="gauge" viewBox="0 0 200 120" aria-hidden="true">
+            <defs>
+              <linearGradient id="arc" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#67d8ff" />
+                <stop offset="1" stop-color="#6cf5c2" />
+              </linearGradient>
+            </defs>
+            <path d="M18 104a82 82 0 0 1 164 0" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="13" stroke-linecap="round" />
+            <path d="M18 104a82 82 0 0 1 164 0" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="2" stroke-dasharray="1 25" />
+            <path class="gauge-fill" d="M18 104a82 82 0 0 1 164 0" fill="none" stroke="url(#arc)" stroke-width="13" stroke-linecap="round" stroke-dasharray="258" stroke-dashoffset="258" />
+            <circle class="gauge-dot" cx="18" cy="104" r="5" fill="#6cf5c2" stroke="#06070a" stroke-width="3" />
+          </svg>
+          <span class="vis-tag">RALLY</span>
+        </div>
+        <h3>Rally pattern</h3>
+        <p>Position in the day's range, displacement from the extreme and volume percentile, folded into one strength read per symbol.</p>
+      </article>
+
+      <article class="card reveal" data-delay="2">
+        <div class="card-visual ladder-wrap">
+          <div class="ladder" id="ladder">
+            <div class="lrow"><i style="--w:34%"></i><span></span><i style="--w:28%"></i></div>
+            <div class="lrow"><i style="--w:52%"></i><span></span><i style="--w:44%"></i></div>
+            <div class="lrow"><i style="--w:71%"></i><span></span><i style="--w:63%"></i></div>
+            <div class="lrow hot"><i style="--w:96%"></i><span></span><i style="--w:88%"></i></div>
+            <div class="lrow"><i style="--w:58%"></i><span></span><i style="--w:66%"></i></div>
+            <div class="lrow"><i style="--w:41%"></i><span></span><i style="--w:37%"></i></div>
+          </div>
+          <span class="vis-tag">DEPTH</span>
+        </div>
+        <h3>Option liquidity</h3>
+        <p>Every strike graded for turnover, spread and continuity — so the contract you pick is one the market can actually fill.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============================ PICTURE ============================= -->
+  <section class="picture" id="picture">
+    <div class="picture-inner">
+      <div class="picture-copy reveal">
+        <span class="sec-num">02 — Market picture</span>
+        <h2>Two hundred charts.<br /><span class="dim">One glance.</span></h2>
+        <p>Every F&amp;O underlying, plotted at its move and coloured by pattern. The board scans in the background; you only look at what stands apart.</p>
+        <div class="legend-row">
+          <span><i class="dot mint"></i>Bullish rally</span>
+          <span><i class="dot rose"></i>Bearish rally</span>
+          <span><i class="dot grey"></i>No pattern</span>
+        </div>
+      </div>
+      <div class="picture-canvas reveal" data-delay="1">
+        <canvas id="scatter"></canvas>
+        <div class="scatter-axis"><span>BEARISH</span><span>BULLISH</span></div>
+        <div class="scatter-tip" id="scatterTip" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ LIVE BOARD ========================== -->
+  <section class="section live" id="live">
+    <div class="live-head reveal">
+      <div>
+        <span class="sec-num">03 — Live board</span>
+        <h2>What the scanner is seeing<br /><span class="dim">right now.</span></h2>
+      </div>
+      <div class="live-status">
+        <div class="radar"><span></span></div>
+        <div class="ls-text">
+          <b id="liveCount">—</b>
+          <span>underlyings scanned</span>
+        </div>
+        <div class="live-sync"><i></i><span id="liveSync">syncing</span></div>
+      </div>
+    </div>
+
+    <div class="rails">
+      <div class="rail rail-bull reveal">
+        <div class="rail-head">
+          <span>Bullish rally</span>
+          <b id="bullCount">—</b>
+        </div>
+        <ol class="rail-list" id="bullList"></ol>
+      </div>
+      <div class="rail rail-bear reveal" data-delay="1">
+        <div class="rail-head">
+          <span>Bearish rally</span>
+          <b id="bearCount">—</b>
+        </div>
+        <ol class="rail-list" id="bearList"></ol>
+      </div>
+    </div>
+
+    <div class="feed-block reveal">
+      <div class="feed-head">
+        <span class="lbl">Signal stream</span>
+        <em>detected this session · newest first</em>
+      </div>
+      <div class="feed" id="feed"></div>
+    </div>
+
+    <div class="sector-row reveal" id="sectors"></div>
+  </section>
+
+  <!-- ============================= ENGINE ============================= -->
+  <section class="section" id="engine">
+    <div class="sec-head reveal">
+      <span class="sec-num">04 — Under the hood</span>
+      <h2>Runs quietly.<br /><span class="dim">All session.</span></h2>
+    </div>
+
+    <div class="pipeline reveal">
+      <div class="pipe-step"><span>01</span><h4>Scan</h4><p>Every F&amp;O underlying pulled on a five-minute cadence.</p></div>
+      <div class="pipe-line"></div>
+      <div class="pipe-step"><span>02</span><h4>Rank</h4><p>Rally pattern scored against the day's range and volume.</p></div>
+      <div class="pipe-line"></div>
+      <div class="pipe-step"><span>03</span><h4>Grade</h4><p>Option chains swept for liquidity, spread and continuity.</p></div>
+      <div class="pipe-line"></div>
+      <div class="pipe-step"><span>04</span><h4>Surface</h4><p>Only the setups that clear every filter reach the picture.</p></div>
+    </div>
+
+    <div class="quiet-stats reveal">
+      <div><b id="statScored">—</b><span>symbols scored live</span></div>
+      <div><b id="statBull">—</b><span>bullish rallies</span></div>
+      <div><b id="statBear">—</b><span>bearish rallies</span></div>
+      <div><b id="statSession">—</b><span>market state</span></div>
+    </div>
+  </section>
+
+  <!-- ============================== CTA =============================== -->
+  <section class="cta-band reveal">
+    <h2>Be ready before<br /><span class="grad">the first candle closes.</span></h2>
+    <p>Connect your Upstox account and the board fills itself. No orders, no advice — just the read.</p>
+    <div class="hero-actions center">
+      <a class="btn" id="ctaConnect" href="/api/auth/login">Connect Upstox</a>
+      <a class="btn btn-quiet" href="/board">Open the board</a>
+    </div>
+  </section>
+
+  <!-- ============================== FAQ =============================== -->
+  <section class="section faq" id="faq">
+    <div class="sec-head reveal">
+      <span class="sec-num">05 — Questions</span>
+      <h2>Before you connect.</h2>
+    </div>
+    <div class="faq-list">
+      <details class="reveal" open>
+        <summary>What exactly am I looking at?</summary>
+        <p>One board for the NSE F&amp;O universe: the order blocks price reacted from, the rally strength of each symbol, and the liquidity grade of the strikes around the money. Everything is derived from price, volume and option-chain depth — nothing is copied from a chat room.</p>
+      </details>
+      <details class="reveal">
+        <summary>Does it place trades or give calls?</summary>
+        <p>No. It is a market-analytics board. It shows where institutional activity is building and how deep the option market is; the decision — and the order — stays with you in your broker terminal.</p>
+      </details>
+      <details class="reveal">
+        <summary>When is it live?</summary>
+        <p>Through the NSE session, 09:15 to 15:30 IST. Outside those hours the board holds the last session's read, so weekend preparation looks the same as the close.</p>
+      </details>
+      <details class="reveal">
+        <summary>Do I need a broker account?</summary>
+        <p>For live data, yes — an Upstox API app, connected once. Until then the site runs a sample session so you can see how the engine behaves.</p>
+      </details>
+      <details class="reveal">
+        <summary>Does it work on a phone?</summary>
+        <p>It is a browser board: phone, tablet or desktop, nothing to install. The chart and the picture adapt to the screen you are holding.</p>
+      </details>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-top">
+    <div class="footer-brand">
+      <span>OB SENTINEL</span>
+      <p>Order-block intelligence for Indian derivatives.</p>
+    </div>
+    <div class="footer-links">
+      <a href="#read">The read</a>
+      <a href="#picture">Market picture</a>
+      <a href="#live">Live board</a>
+      <a href="/board">Board</a>
+      <a href="/api/auth/login">Connect broker</a>
+    </div>
+  </div>
+  <p class="risk">
+    <b>Risk disclosure.</b> OB Sentinel is a market-analytics tool. Nothing on this site is
+    investment advice or a recommendation to buy or sell any security. Trading in equity
+    derivatives carries a high risk of loss. Data shown while no broker session is connected
+    is sample data, not a live market.
+  </p>
+  <div class="footer-bot">
+    <span>© <span id="year">2026</span> OB Sentinel</span>
+    <span id="footState">Sample feed</span>
+  </div>
+</footer>
+
+<script src="/site.js"></script>
+</body>
+</html>

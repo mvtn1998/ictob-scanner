@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OB SENTINEL — Live Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/board.css" />
+</head>
+<body>
+<div class="bg"><span class="bg-grid"></span><span class="bg-a"></span><span class="bg-b"></span></div>
+
+<header class="top">
+  <a class="brand" href="/">
+    <span class="mark"><i></i></span>
+    <span class="bt"><b>OB SENTINEL</b><em>live board · nse f&amp;o</em></span>
+  </a>
+  <div class="tape"><div class="tape-in" id="tape"></div></div>
+  <div class="top-right">
+    <div class="state" id="feedState"><i></i><span>SAMPLE</span></div>
+    <div class="clock"><b id="clock">--:--:--</b><em id="sessionLbl">—</em></div>
+    <a class="link-btn" href="/dash" style="margin-right:8px">Dashboard</a>
+    <a class="link-btn" id="brokerBtn" href="/api/auth/login">Link broker</a>
+  </div>
+</header>
+
+<section class="picture">
+  <div class="pic-head">
+    <span class="lbl">Market picture</span>
+    <div class="pic-counts">
+      <span class="c bull"><i>▲</i><b id="cntBull">—</b> bullish</span>
+      <span class="c bear"><i>▼</i><b id="cntBear">—</b> bearish</span>
+      <span class="b-bar"><i id="breadthFill"></i></span>
+    </div>
+    <span class="pic-time" id="picTime">—</span>
+  </div>
+  <div class="pic-canvas">
+    <canvas id="dotfield"></canvas>
+    <div class="dot-tip" id="dotTip" hidden></div>
+  </div>
+  <div class="pic-foot">
+    <span>Leading <b id="leadSec">—</b></span>
+    <span>Lagging <b id="lagSec">—</b></span>
+    <span id="breadthTxt">—</span>
+    <span class="grow"></span>
+    <span id="picMeta">—</span>
+  </div>
+</section>
+
+<div class="scope" id="scopeBar"></div>
+
+<main class="wrap">
+  <div class="boards">
+    <section class="board" data-side="BULL">
+      <header class="board-head">
+        <h2><i class="tick bull"></i>Bullish board</h2>
+        <span class="bcount" id="bullCount">—</span>
+      </header>
+      <div class="cols">
+        <span>rank</span><span>stock</span><span>rule</span>
+        <span class="c-str">strength</span><span class="c-mv">move</span><span class="c-op">option</span>
+      </div>
+      <ol class="list" id="bullList"></ol>
+    </section>
+
+    <section class="board" data-side="BEAR">
+      <header class="board-head">
+        <h2><i class="tick bear"></i>Bearish board</h2>
+        <span class="bcount" id="bearCount">—</span>
+      </header>
+      <div class="cols">
+        <span>rank</span><span>stock</span><span>rule</span>
+        <span class="c-str">strength</span><span class="c-mv">move</span><span class="c-op">option</span>
+      </div>
+      <ol class="list" id="bearList"></ol>
+    </section>
+  </div>
+
+  <aside class="setup" id="setup">
+    <header class="setup-head">
+      <h2><i class="tick"></i>Setup</h2>
+      <button class="close" id="setupClose" hidden>×</button>
+    </header>
+
+    <div class="setup-empty" id="setupEmpty">
+      <div class="reticle"><i></i></div>
+      <p>Pick a stock to open its zone</p>
+    </div>
+
+    <div class="setup-body" id="setupBody" hidden>
+      <div class="s-head">
+        <div class="s-id">
+          <b id="sSym">—</b>
+          <em id="sMeta">—</em>
+        </div>
+        <div class="s-quote">
+          <b id="sLtp">—</b>
+          <em id="sPct">—</em>
+        </div>
+      </div>
+
+      <div class="s-chart">
+        <canvas id="sChart"></canvas>
+        <div class="s-tip" id="sTip" hidden></div>
+      </div>
+
+      <div class="s-stats" id="sStats"></div>
+      <div class="s-levels" id="sLevels"></div>
+      <div class="s-contract" id="sContract"></div>
+    </div>
+  </aside>
+</main>
+
+<footer class="status">
+  <span class="dot" id="statusDot"></span>
+  <b id="phaseLbl">booting</b>
+  <div class="prog"><i id="progFill"></i></div>
+  <span id="cycleLbl">cycle —</span>
+  <span class="grow"></span>
+  <span id="feedLbl">feed · —</span>
+  <span id="tickLbl">tick · —</span>
+  <span class="err" id="errLbl"></span>
+</footer>
+
+<script src="/board.js"></script>
+</body>
+</html>
