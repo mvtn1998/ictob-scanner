@@ -29,7 +29,21 @@ ROOT = Path(__file__).resolve().parent
 WEB = ROOT / "web"
 DATA = ROOT / "data"
 HOST = os.environ.get("OB_HOST", "127.0.0.1")
-PORT = int(os.environ.get("OB_PORT") or os.environ.get("PORT") or "8765")
+
+
+def _port() -> int:
+    """OB_PORT, else the host's PORT, else 8765. An empty or 0 PORT is ignored."""
+    for name in ("OB_PORT", "PORT"):
+        try:
+            v = int(os.environ.get(name) or 0)
+        except ValueError:
+            continue
+        if 0 < v < 65536:
+            return v
+    return 8765
+
+
+PORT = _port()
 # A deployed copy cannot finish an Upstox login (the app has one registered
 # redirect URI, pointing at this computer), so the local instance hands it the
 # day's token instead. Set OB_CLOUD=1 on the host.
