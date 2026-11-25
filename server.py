@@ -103,6 +103,12 @@ class TokenSync(threading.Thread):
                         print("token synced to the deployed site")
             except Exception:                       # noqa: BLE001
                 pass
+            try:
+                # a free instance sleeps after 15 idle minutes; this computer
+                # is the feed, so its heartbeat keeps the deployed page warm
+                requests.get(f"{SYNC_URL}/healthz", timeout=20)
+            except requests.RequestException:
+                pass
             time.sleep(300)
 
 
