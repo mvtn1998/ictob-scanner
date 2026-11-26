@@ -44,10 +44,13 @@ def _port() -> int:
 
 
 PORT = _port()
-# A deployed copy cannot finish an Upstox login (the app has one registered
-# redirect URI, pointing at this computer), so the local instance hands it the
-# day's token instead. Set OB_CLOUD=1 on the host.
+# The deployed copy runs the same OAuth login as the desktop app. The Upstox
+# app's registered redirect URL points at {public origin}/callback and
+# UPSTOX_REDIRECT_URI tells this process which URL to send. Set OB_CLOUD=1 on
+# the host (it only marks the cookie Secure and the startup note).
 CLOUD = os.environ.get("OB_CLOUD", "") == "1"
+# a token the browser already carries, so one attempt per cookie value
+COOKIE_TRIED = {"tok": ""}
 
 
 def _sync_conf() -> tuple[str, str]:
@@ -86,6 +89,24 @@ def push_token(token: str) -> bool:
         return False
 
 
+def pull_token() -> bool:
+    """Borrow the deployed copy's token (the desktop copy has no login now)."""
+    if not (SYNC_URL and SYNC_KEY):
+        return False
+    try:
+        r = requests.get(f"{SYNC_URL}/api/auth/token",
+                         headers={"X-OB-Key": SYNC_KEY}, timeout=20)
+        if r.status_code != 200:
+            return False
+        tok = str((r.json() or {}).get("access_token") or "").strip()
+    except (requests.RequestException, ValueError):
+        return False
+    if len(tok) < 20:
+        return False
+    ENGINE.client.save_token(tok)
+    return True
+
+
 class TokenSync(threading.Thread):
     """Keep the deployed copy logged in after the daily re-login here."""
 
@@ -96,11 +117,15 @@ class TokenSync(threading.Thread):
     def run(self) -> None:
         while ENGINE is not None:
             try:
+                ok = ENGINE.client.valid()[0]
+                if not ok and pull_token():
+                    ok = ENGINE.client.valid()[0]
+                    if ok:
+                        print("token taken from the deployed site")
                 tok = ENGINE.client.token()
-                if tok and tok != self.last and ENGINE.client.valid()[0]:
-                    if push_token(tok):
-                        self.last = tok
-                        print("token synced to the deployed site")
+                if ok and tok and tok != self.last and push_token(tok):
+                    self.last = tok
+                    print("token synced to the deployed site")
             except Exception:                       # noqa: BLE001
                 pass
             try:
@@ -135,8 +160,15 @@ class Handler(BaseHTTPRequestHandler):
                           allow_nan=False).encode("utf-8")
         self._send(code, body, "application/json; charset=utf-8")
 
-    def redirect(self, to: str) -> None:
-        self._send(302, b"", "text/plain", {"Location": to})
+    def redirect(self, to: str, extra: dict | None = None) -> None:
+        self._send(302, b"", "text/plain", {"Location": to, **(extra or {})})
+
+    def _cookie(self, name: str) -> str:
+        for part in (self.headers.get("Cookie") or "").split(";"):
+            k, _, v = part.strip().partition("=")
+            if k == name:
+                return v.strip()
+        return ""
 
     def log_message(self, fmt, *args):          # keep the console readable
         if "/api/" in (str(args[0]) if args else ""):
@@ -189,6 +221,15 @@ class Handler(BaseHTTPRequestHandler):
         path = u.path
         q = parse_qs(u.query)
         eng = ENGINE
+        # after a restart the token file is gone but the owner's browser still
+        # carries one; adopt it once, and only if Upstox accepts it
+        if eng is not None and not eng.client.token():
+            tok = self._cookie("ob_tok")
+            if len(tok) > 20 and tok != COOKIE_TRIED["tok"]:
+                COOKIE_TRIED["tok"] = tok
+                if eng.client.check_token(tok):
+                    eng.client.save_token(tok)
+                    print("token restored from the browser")
 
         if path == "/healthz":
             self.json({"ok": True, "stocks": len(eng.stocks),
@@ -196,6 +237,13 @@ class Handler(BaseHTTPRequestHandler):
                        "auth": eng.auth_msg,
                        "tick": round(time.time() - eng.last_tick, 1)
                        if eng.last_tick else None})
+            return
+        if path == "/api/auth/token":
+            # the desktop copy borrows this token when it has none of its own
+            if not SYNC_KEY or self.headers.get("X-OB-Key", "") != SYNC_KEY:
+                self.json({"error": "forbidden"}, 403)
+                return
+            self.json({"access_token": eng.client.token() if eng else ""})
             return
         if path == "/api/chart":
             sym = (q.get("symbol") or ["NIFTY 50"])[0]
@@ -243,14 +291,20 @@ class Handler(BaseHTTPRequestHandler):
             self.json(eng.set_scope(name or None))
             return
         if path == "/api/auth/login":
+            creds = eng.client.credentials()
+            if not (creds.get("api_key") and creds.get("redirect_uri")):
+                self.json({"error": "Upstox app key / redirect URL missing"}, 500)
+                return
             nxt = (q.get("next") or [""])[0]
             state = "ob-sentinel" + (f"|{nxt}" if nxt in PAGE_AFTER_LOGIN else "")
             self.redirect(eng.client.login_url(state=state))
             return
         if path == "/api/auth/state":
             ok, msg = eng.client.valid()
+            creds = eng.client.credentials()
             self.json({"authorized": ok, "message": msg,
-                       "demo": eng.demo, "login": not CLOUD,
+                       "demo": eng.demo, "login": True,
+                       "redirect": creds.get("redirect_uri", ""),
                        "cloud": CLOUD, "sync": bool(SYNC_URL)})
             return
         if path == "/callback":
@@ -263,15 +317,22 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as e:              # noqa: BLE001
                 self._send(500, f"login failed: {e}".encode(), "text/plain")
                 return
-            threading.Thread(target=push_token,
-                             args=(eng.client.token(),), daemon=True).start()
+            tok = eng.client.token()
+            threading.Thread(target=push_token, args=(tok,),
+                             daemon=True).start()
+            # a restarted free instance has an empty disk; this browser can
+            # hand the token straight back instead of a second login
+            cookie = (f"ob_tok={tok}; Path=/; HttpOnly; SameSite=Lax; "
+                      "Max-Age=86400")
+            if CLOUD or self.headers.get("X-Forwarded-Proto") == "https":
+                cookie += "; Secure"
             dest = "/?linked=1"
             state = (q.get("state") or [""])[0]
             if "|" in state:
                 nxt = state.split("|", 1)[1]
                 if nxt in PAGE_AFTER_LOGIN:
                     dest = PAGE_AFTER_LOGIN[nxt] + "?linked=1"
-            self.redirect(dest)
+            self.redirect(dest, {"Set-Cookie": cookie})
             return
 
         # ---- pages ----
@@ -323,7 +384,7 @@ def main() -> None:
     srv.daemon_threads = True
     print(f"OB SENTINEL  ->  http://{HOST}:{PORT}")
     if CLOUD:
-        print("cloud mode: the Upstox token is received from the local scanner")
+        print("cloud mode: Upstox login runs here (one click per trading day)")
     print(f"universe: {len(ENGINE.stocks)} F&O stocks · "
           f"indices: {len(ENGINE.indices)} · auto live/sample")
     try:

@@ -697,21 +697,17 @@
       const b = $("upstoxBtn");
       if (!b) return;
       if (s.authorized) {
-        b.textContent = s.cloud ? "Live feed from your PC" : "Upstox connected";
+        b.textContent = "Upstox connected";
         b.className = "upstox on";
         b.href = "#";
         b.title = "Live feed from your Upstox account";
-      } else if (s.login === false) {
-        b.textContent = /expired/i.test(s.message || "") ? "Reconnect on your PC" : "Waiting for your PC";
-        b.className = "upstox warn";
-        b.href = "#";
-        b.title = "This copy takes the live feed from the scanner running on your computer; open it there and reconnect Upstox";
       } else {
         const expired = /expired/i.test(s.message || "");
         b.textContent = expired ? "Reconnect Upstox" : "Connect Upstox";
         b.className = "upstox" + (expired ? " warn" : "");
         b.href = "/api/auth/login?next=smart";
         b.title = s.message ? `Upstox: ${s.message}` : "Link your Upstox account";
+        b.setAttribute("rel", "noopener");
       }
     } catch (_) { /* the button keeps its default link */ }
   }

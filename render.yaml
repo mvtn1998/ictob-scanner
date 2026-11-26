@@ -7,13 +7,15 @@ services:
     healthCheckPath: /healthz
     autoDeploy: true
     envVars:
-      - key: OB_CLOUD       # the deployed copy takes its feed from the local scanner
+      - key: OB_CLOUD       # the deployed copy signs in to Upstox on its own
         value: "1"
+      - key: UPSTOX_REDIRECT_URI  # must match the Upstox app's redirect URL exactly
+        value: https://ictob-scanner.onrender.com/callback
       - key: UPSTOX_API_KEY
         sync: false
       - key: UPSTOX_API_SECRET
         sync: false
       - key: UPSTOX_ACCESS_TOKEN  # optional: today's token, so the site starts LIVE
         sync: false
-      - key: OB_SYNC_KEY    # shared secret used to receive that token
+      - key: OB_SYNC_KEY    # optional: shared secret for the desktop token bridge
         sync: false

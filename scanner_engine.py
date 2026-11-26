@@ -56,6 +56,7 @@ class Upstox:
         self.token_file = self.root / "upstox_token.json"
         self.cred_file = self.root / "config" / "credentials.json"
         self.session = requests.Session()
+        self._tok = ""
         self._valid: tuple[float, bool, str] | None = None
 
     # ------------------------------------------------------------- auth ---
@@ -73,6 +74,8 @@ class Upstox:
         return c
 
     def token(self) -> str:
+        if self._tok:
+            return self._tok
         try:
             tok = str(json.loads(self.token_file.read_text(
                 encoding="utf-8")).get("access_token") or "")
@@ -82,12 +85,29 @@ class Upstox:
         return tok or os.environ.get("UPSTOX_ACCESS_TOKEN", "").strip()
 
     def save_token(self, token: str, api_key: str = "") -> None:
-        self.token_file.write_text(json.dumps({
-            "access_token": token,
-            "obtained_at": time.time(),
-            "api_key": api_key,
-        }, indent=2), encoding="utf-8")
+        # keep it in memory first: a host with an ephemeral or read-only disk
+        # still serves the live feed until it restarts
+        self._tok = token.strip()
         self._valid = None
+        try:
+            self.token_file.write_text(json.dumps({
+                "access_token": self._tok,
+                "obtained_at": time.time(),
+                "api_key": api_key,
+            }, indent=2), encoding="utf-8")
+        except OSError:
+            pass
+
+    def check_token(self, tok: str) -> bool:
+        """True when Upstox accepts this token (no state touched)."""
+        try:
+            r = requests.get(f"{API_BASE}/v2/user/profile",
+                             headers={**UA,
+                                      "Authorization": f"Bearer {tok}"},
+                             timeout=12)
+            return r.status_code == 200
+        except requests.RequestException:
+            return False
 
     def login_url(self, state: str = "ob-sentinel") -> str:
         c = self.credentials()
