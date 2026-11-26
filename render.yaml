@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: ictob-scanner
+    name: smartmoney
     runtime: docker
     dockerfilePath: ./Dockerfile
     plan: free             # $0 forever; sleeps after 15 min idle and wakes in ~1 min
@@ -10,7 +10,7 @@ services:
       - key: OB_CLOUD       # the deployed copy signs in to Upstox on its own
         value: "1"
       - key: UPSTOX_REDIRECT_URI  # must match the Upstox app's redirect URL exactly
-        value: https://ictob-scanner.onrender.com/callback
+        value: https://smartmoney-hpr7.onrender.com/callback
       - key: UPSTOX_API_KEY
         sync: false
       - key: UPSTOX_API_SECRET
